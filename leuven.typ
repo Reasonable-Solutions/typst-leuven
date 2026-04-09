@@ -70,7 +70,7 @@
     fill:   leuven-white,
   )
 
-  set text(font: "Liberation Sans", size: 18pt, fill: leuven-text)
+  set text(font: "JetBrains Mono", size: 18pt, fill: leuven-text)
 
   body
 }
@@ -178,7 +178,7 @@
 /// - right (content): right column body
 #let slide2(title: none, left, right) = {
   slide(title: title)[
-    grid(
+    #grid(
       columns: (1fr, 1fr),
       column-gutter: 1.8em,
       left,
@@ -198,6 +198,15 @@
   body,
 )
 
+/// Success / good-news block (green left bar).
+#let success-block(body) = block(
+  fill:   rgb("#EFFFEF"),
+  stroke: (left: 3pt + leuven-green),
+  inset:  (x: 1em, y: 0.7em),
+  width:  100%,
+  body,
+)
+
 /// Alert / warning block (orange left bar).
 #let alert-block(body) = block(
   fill:   rgb("#FFF2DE"),
@@ -206,6 +215,62 @@
   width:  100%,
   body,
 )
+
+/// Code block with Leuven styling.
+///
+/// Wraps a `raw` element with a header bar showing the language label
+/// and the characteristic Leuven light-yellow background.
+///
+/// - lang  (str):     language passed to `raw` for syntax highlighting
+/// - title (content): optional caption shown in the header bar
+/// - body  (str):     source code string
+#let code-block(lang: none, title: none, body) = {
+  // Override raw theme colors to match Leuven
+  show raw: set text(font: "JetBrains Mono", size: 0.72em)
+
+  // Syntax token colors drawn from leuven-theme.el
+  show raw.where(lang: lang): it => {
+    set text(fill: rgb("#000088"))
+    it
+  }
+
+  let label-bar = if lang != none or title != none {
+    block(
+      width:  100%,
+      fill:   leuven-navy,
+      inset:  (x: 0.8em, y: 0.4em),
+      {
+        set text(size: 0.68em, fill: leuven-sky, font: "JetBrains Mono")
+        if title != none { title } else { lang }
+      },
+    )
+  }
+
+  block(
+    width:  100%,
+    stroke: (left: 3pt + leuven-navy),
+    clip:   true,
+    radius: 2pt,
+    {
+      if label-bar != none { label-bar }
+      block(
+        width:  100%,
+        fill:   rgb("#FFFFE0"),
+        inset:  (x: 1em, y: 0.8em),
+        raw(body, lang: lang, block: true),
+      )
+    },
+  )
+}
+
+/// Full slide pre-loaded with a code block.
+///
+/// - title (content): slide heading
+/// - lang  (str):     language for syntax highlighting
+/// - body  (str):     source code string
+#let code-slide(title: none, lang: none, body) = {
+  slide(title: title, code-block(lang: lang, body))
+}
 
 /// Styled bullet list with Leuven colors.
 #let leuven-list(..items) = {
